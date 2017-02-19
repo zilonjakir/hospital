@@ -1,0 +1,9 @@
+.pdf_patient_info{
+    overflow: hidden;
+}
+.pdf_patient_info_left{
+    float: left;
+}
+.pdf_patient_info_right{
+    float: right;
+}
