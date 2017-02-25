@@ -44,13 +44,19 @@
                 <li class="">
                     <a href="#" class="dropdown-toggle no-margin userdropdown" data-toggle="dropdown"> 
                         <i class="<?php //echo module_icon(ucfirst($controller)); ?>"></i>&nbsp;
-                        <?php echo ucfirst ($controller); ?>&nbsp;
+                        <?php echo $this->login_model->default_module(); ?>&nbsp;
                         <i class="fa fa-caret-down"></i>
                     </a>
                     <ul class="dropdown-menu pull-right">
-                        <li>
-                            <a href="" class="padding-10 padding-top-0 padding-bottom-0"><i class=""></i>Admin</a>
-                        </li>                        
+                        
+                        <?php
+                            foreach ($this->login_model->all_module_list() as $rmodule)
+                            { ?>
+                                <li>
+                                    <a href="<?php echo base_url().'access/module_change/'.$rmodule->user_module_id; ?>" module_id="<?php echo $rmodule->user_module_id; ?>" class="padding-10 padding-top-0 padding-bottom-0"><i class=""></i><?php echo $rmodule->module_name; ?></a>
+                                </li>
+                            <?php }
+                        ?>
                     </ul>
                 </li>
             </ul>

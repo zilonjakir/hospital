@@ -120,6 +120,7 @@ class Admin extends Access
             $html .= "<td class='totalCol'>100</td>";
             $html .= "</tr>";
             
+            
             $html .= "<tr class='percentColumn'>";
             $html .= "<td colspan='3'>&nbsp;</td>";
             $html .= $this->investigation_billing_model->get_service_total("percent");
