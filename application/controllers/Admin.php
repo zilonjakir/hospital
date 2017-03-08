@@ -469,5 +469,124 @@ class Admin extends Access
         $data['service_report_list'] = $this->setting_model->service_report_list();
         $this->load->view("service_report_list_ajax_view",$data);
     }
+    function create_menu_list_all($menu_id,$permitted_array){
+        $result = $this->login_model->get_menu($menu_id);
+        $p =  "<ul>";
+        foreach($result as $item){
+            if ($item['Count'] > 0) {              
+                $p .= "<li><span>";
+                $p .= "<input name='menu_id[]' type='checkbox' value='".$item['menu_id']."' ".(in_array($item['menu_id'], $permitted_array)?'checked':'')." />" . $item['menu_name'] ."</span>";
+                $p .= "<ul>";
+                $p .= $this->create_menu_list_all($item['menu_id'],$permitted_array);
+                $p .= "</ul></li>";
+            } elseif ($item['Count']==0) {              
+                $p .= "<li><span><input name='menu_id[]' type='checkbox' value='".$item['menu_id']."' ".(in_array($item['menu_id'], $permitted_array)?'checked':'')." />" . $item['menu_name']."</span></li>";
+            } else;
+        }
+        $p .= "</ul>";
+        return $p;
+    }
+    public function menu_privilege()
+    {
+        $level_id = $this->input->post('user_level_id');
+        $module_id = $this->input->post('module_id');
+        $data = array();
+        if($level_id != ''){
+        $current_permitted_menu = $this->login_model->get_level_menu_list($level_id);
+        $get_menu_info = $this->login_model->get_menu_model(NULL,$module_id);
+        $array_str = '<ul>';
+        
+        foreach ($get_menu_info as $menu_item){
+            $array_str .= "<li><span><i class='icon-leaf'></i><input name='menu_id[]' type='checkbox' value='".$menu_item['menu_id']."' ".(in_array($menu_item['menu_id'], $current_permitted_menu)?'checked':'')." />" . $menu_item['menu_name']."</span></li>".$this->create_menu_list_all($menu_item['menu_id'],$current_permitted_menu);
+        }
+        $array_str .= '</ul>';
+        $data['menu_list_array'] = $array_str;
+        $data['selected_level'] = $level_id;
+        $data['selected_module'] = $module_id;
+        }
+        $data['controller'] = CONTROLLER;
+        $data['page_title'] = "Menu Previlige";
+        $data['modules'] = $this->db->query("SELECT * FROM module WHERE status='Active'")->result();
+        $data['levels'] = $this->db->query("SELECT * FROM user_level WHERE status='Active' AND user_level_id NOT IN(1)")->result();
+        $data['view'] = "menu_privilege";
+        $this->load->view("index",$data);
+    }
+    function set_menu_access_for_level(){
+        $selected_menu_array = $this->input->post('menu_id');
+        $level_id = $this->input->post('level_id');
+	$module_id = $this->input->post('module_id');
+        $this->db->query("DELETE FROM privilege_menu WHERE user_level_id='$level_id' AND privilege_menu.menu_id IN (SELECT menu.menu_id FROM menu WHERE menu.module_id = $module_id)");
+        foreach ($selected_menu_array as $menu_id) {
+            $data = array(
+                'menu_id' => $menu_id ,
+                'user_level_id' => $level_id
+             );
+
+             $this->db->insert('privilege_menu', $data); 
+        }
+        $current_permitted_menu = $this->login_model->get_level_menu_list($level_id);
+        $get_menu_info = $this->login_model->get_menu_model(NULL,$module_id); // call model for getting menu and sub menu
+
+        $array_str = '<ul>';
+        foreach ($get_menu_info as $menu_item){
+            $array_str .= "<li><span><i class='icon-leaf'></i><input name='menu_id[]' type='checkbox' value='".$menu_item['menu_id']."' ".(in_array($menu_item['menu_id'], $current_permitted_menu)?'checked':'')." />" . $menu_item['menu_name']."</span></li>".$this->create_menu_list_all($menu_item['menu_id'],$current_permitted_menu);
+        }
+        $array_str .= '</ul>';
+        $data['menu_list_array'] = $array_str;
+        $data['selected_level'] = $level_id;
+        $data['selected_module'] = $module_id;
+        $data['page_title'] = "Menu Previlige";
+        $data['modules'] = $this->db->query("SELECT * FROM module WHERE status='Active'")->result();
+        $data['levels'] = $this->db->query("SELECT * FROM user_level WHERE status='Active' AND user_level_id NOT IN(1)")->result();
+        $data['view'] = "menu_privilege";
+        $this->load->view("index",$data);
+    }
+    
+    public function level_privilege($auser_id=NULL)
+    {
+        $user_id = $this->input->post('user_id');
+        $data = array();
+        if(($user_id != '') || ($auser_id !=NULL)){
+            if($auser_id)
+            {
+                $user_id = $auser_id;
+            }
+            $current_permitted_level = $this->login_model->get_level_list($user_id);
+            $get_level_info = $this->login_model->get_level();
+            $array_str = '<ul>';
+
+            foreach ($get_level_info as $level_item){
+                $array_str .= "<li><span><i class='icon-leaf'></i><input name='level_id[]' type='checkbox' value='".$level_item['user_level_id']."' ".(in_array($level_item['user_level_id'], $current_permitted_level)?'checked':'')." />" . $level_item['user_level_name'];
+            }
+            $array_str .= '</ul>';
+            $data['menu_list_array'] = $array_str;
+            $data['selected_user'] = $user_id;
+        }
+        $data['controller'] = CONTROLLER;
+        $data['page_title'] = "Level Previlige";
+        $data['users'] = $this->db->query("SELECT * FROM user where user_id NOT IN(1)")->result();
+        //$data['levels'] = $this->db->query("SELECT * FROM user_level WHERE status='Active' AND user_level_id NOT IN(1)")->result();
+        $data['view'] = "level_privilege";
+        $this->load->view("index",$data);
+    }
+    
+    
+    function set_level_access_for_user(){
+        $selected_level_array = $this->input->post();
+        $this->db->query("DELETE FROM privilege_level WHERE user_id='".$selected_level_array["user_id"]."'");
+        if(isset($selected_level_array['level_id']))
+        {
+            foreach ($selected_level_array['level_id'] as $vl)
+            {
+                $data = array(
+                    "user_id"=>$selected_level_array["user_id"],
+                    "user_level_id"=>$vl
+                );
+                $this->db->insert('privilege_level', $data); 
+            }
+        }
+        
+       redirect('admin/level_privilege/'.$selected_level_array["user_id"]);  
+    }
 }
 

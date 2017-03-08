@@ -10,9 +10,12 @@
             </li>
             <?php
                 foreach ($this->login_model->all_parent_menu_list() as $pmenu)
-                { ?>
+                { 
+                    if($pmenu->menu_url == "#")
+                    {
+                    ?>
                     <li>
-                        <a href="<?php echo base_url().$pmenu->menu_url; ?>"><i class="<?php echo $pmenu->icon_class; ?>"></i> <span class="menu-item-parent"><?php echo $pmenu->menu_name; ?></span></a>
+                        <a href="#"><i class="fa fa-lg fa-fw fa-inbox"></i> <span class="menu-item-parent"><?php echo $pmenu->menu_name; ?></span></a>
                         <ul>
                             <?php
                                 foreach ($this->login_model->all_child_menu_list($pmenu->menu_id) as $mmenu)
@@ -24,7 +27,15 @@
                             ?>
                         </ul>
                     </li>
-                <?php }
+                <?php 
+                    }
+                    else
+                    { ?>
+                        <li>
+                            <a href="<?php echo base_url().$pmenu->menu_url; ?>"><i class="<?php echo $pmenu->icon_class; ?>"></i> <span class="menu-item-parent"><?php echo $pmenu->menu_name; ?></span></a>
+                        </li>
+                    <?php }
+                }
             ?>
 <!--            <li>
                 <a href="#"><i class="fa fa-lg fa-fw fa-inbox"></i> <span class="menu-item-parent">Investigation</span></a>
