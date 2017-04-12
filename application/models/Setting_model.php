@@ -66,5 +66,22 @@ class Setting_model extends CI_Model
         }
         return $this->db->get()->result();
     }
+    
+    
+    public function user_list($user_id = NULL)
+    {
+        $this->db->select("*");
+        $this->db->from("user");
+        if($user_id)
+        {
+            $this->db->where("user_id",$user_id);
+            return $this->db->get()->row_array();
+        }
+        else
+        {
+            return $this->db->get()->result();
+        }
+        
+    }
 }
 

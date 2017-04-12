@@ -71,6 +71,11 @@ class Login_model extends CI_Model
                             privilege_module.user_id = ".$this->session->userdata('admin_id'))->result();
         }
         
+        public function module_list()
+        {
+            return $this->db->query("SELECT * FROM module  WHERE module.`status` = 'Active'")->result_array();
+        }
+
         public function all_parent_menu_list()
         {
             $where = (($this->session->userdata('admin_username') == 'superadmin')?'':' AND privilege_level.user_id='.$this->session->userdata('admin_id'));

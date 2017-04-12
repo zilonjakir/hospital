@@ -688,5 +688,9 @@
                   webshims.setOptions('forms-ext', {types: 'date'});
                   webshims.polyfill('forms forms-ext');
                 </script>
+                
+                 <script type="text/javascript">
+                    $('select').select2();
+                </script>
 	</body>
 </html>

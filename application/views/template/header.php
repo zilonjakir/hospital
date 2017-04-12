@@ -98,7 +98,8 @@
 		<script src="<?php echo base_url().'js/plugin/masked-input/jquery.maskedinput.min.js'; ?>"></script>
 
 		<!-- JQUERY SELECT2 INPUT -->
-		<script src="<?php echo base_url().'js/plugin/select2/select2.min.js'; ?>"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/js/select2.min.js"></script>
+                <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/css/select2.min.css" rel="stylesheet" />
 
 		<!-- JQUERY UI + Bootstrap Slider -->
 		<script src="<?php echo base_url().'js/plugin/bootstrap-slider/bootstrap-slider.min.js'; ?>"></script>
@@ -154,4 +155,6 @@
                 <script> var base_url = "<?php echo base_url(); ?>"</script>
 	</head>
 	<body class="">
+            
+               
 		

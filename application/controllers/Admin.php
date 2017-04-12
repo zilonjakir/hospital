@@ -55,6 +55,7 @@ class Admin extends Access
         $prev_paid = $this->input->post("prev_paid");
         
         $this->db->query("UPDATE investigation_billing set total_paid=total_paid+".$paid.", due=due-".$paid." WHERE investigation_billing_id=".$bill_id);
+        $this->db->query("call GenerateAutoVoucher('Investigation Billing',".$bill_id.",'investigation_bill',1,'1',".$paid.",'BDT',1,'1','',1,1,'".date('Y-m-d H:i:s')."','Investigation Billing (Bill ID-".$bill_id.")','For Investigation Billing')");
         echo $bill_id;
     }
 
@@ -164,6 +165,7 @@ class Admin extends Access
         if($msg == "")
         {
             $insert_id = $this->common_model->insert_data("commision_pay",$post);
+            $this->db->query("call GenerateAutoVoucher('Reference Billing',".$post["ref_id"].",'reference_bill',1,'1',".$post['paid'].",'BDT',1,'1','',1,1,'".date('Y-m-d H:i:s')."','Reference Payment (Reference ID=".$post["ref_id"].")','For Reference billing')");
             echo $insert_id;
         }
         else
@@ -383,6 +385,7 @@ class Admin extends Access
             "commision"=>  $this->investigation_billing_model->get_total_commision($post['category_service_json'])
         );
         $result = $this->common_model->insert_data("referance_commision",$ref_commision);
+        $this->db->query("call GenerateAutoVoucher('Investigation Billing',".$insert_id.",'investigation_bill',1,'1',".$post['total_paid'].",'BDT',1,'1','',1,1,'".date('Y-m-d H:i:s')."','Investigation Billing (Bill ID=".$insert_id.")','For Investigation Billing');");
         echo $insert_id;
     }
     
@@ -587,6 +590,78 @@ class Admin extends Access
         }
         
        redirect('admin/level_privilege/'.$selected_level_array["user_id"]);  
+    }
+    
+    
+    public function users()
+    {
+        $data['user_list'] = $this->setting_model->service_report_list();
+        $data['models'] = $this->login_model->module_list();
+        $data['user_list'] = $this->setting_model->user_list();
+        $data['controller'] = CONTROLLER;
+        $data['page_title'] = "User Management";
+        $data['view'] = "user_management";
+        $this->load->view("index",$data);
+    }
+    
+    public function user_management_save()
+    {
+        $post = $this->input->post();
+        //debug($post,1);
+        if($post['user_id'])
+        {
+            $this->form_validation->set_rules('name', 'Name', 'trim|required');
+        }
+        else
+        {
+            $this->form_validation->set_rules('contact_no', 'Mobile', 'trim|is_unique[user.contact_no]');
+            $this->form_validation->set_rules('username', 'Username', 'trim|required|min_length[5]|max_length[12]|is_unique[user.username]');
+            $this->form_validation->set_rules('password', 'Password', 'trim|required|min_length[8]');
+            $this->form_validation->set_rules('email', 'Email', 'trim|valid_email|is_unique[user.contact_no]');
+        }
+        
+        
+        $module = json_encode($post['module_id']);
+        unset($post['module_id']);
+        $post['module_id'] = $module;
+        $post['role_id'] = 1;
+        //debug($post,1);
+        if($this->form_validation->run() == TRUE)
+        {
+            if($post['user_id'])
+            {
+                $where = array(
+                    "user_id"=>$post["user_id"]
+                );
+                unset($post['user_id']);
+                $this->common_model->update_data("user",$post,$where);
+                echo "updated";
+            }
+            else
+            {
+                $this->common_model->insert_data("user",$post);
+                echo "saved";
+            }
+        }
+        else
+        {
+            echo validation_errors();
+        }
+    }
+    
+    public function user_management_edit_info()
+    {
+        $user_id = $this->input->post("user_id");
+        $user_info = $this->setting_model->user_list($user_id);
+        $user_info['module_comma_separeted'] = implode(",",json_decode($user_info['module_id']));
+        //debug($user_info,1);
+        echo json_encode($user_info);
+    }
+    
+    public function get_user_list()
+    {
+        $data['user_list'] = $this->setting_model->user_list();
+        $this->load->view("user_list_ajax_view",$data);
     }
 }
 

@@ -143,10 +143,22 @@ if (!function_exists('mpdf_create')) {
     }
     
     
+}
+
+
     function module($selected_value = NULL, $extra_attr = array(), $name = 'module_id', $where = NULL) {
         $sql = "SELECT module_id,module_name FROM module WHERE module_id<>2";
         $id_field = 'module_id';
         $value_field = 'module_name';
         echo common_in_combo($name, $sql, $where, $selected_value, $extra_attr, $id_field, $value_field);
     }
-}
+    
+    
+    function maxVoucherNo() {
+        $CI = & get_instance();
+        $result = $CI->db->query("SELECT
+            Max(voucherdetails.VoucherNo) as maxvoucher
+            FROM
+            voucherdetails")->row();
+        return $result->maxvoucher;
+    }
